@@ -3,15 +3,15 @@
 # Created by: Tsuyu
 # Created on: 10/15/2020
 
-should_install <- TRUE
-should_load_csv <- TRUE
-should_save_csv <- TRUE
+should_install <- FALSE
+should_load_csv <- FALSE
+should_save_csv <- FALSE
 should_load_rdat <- FALSE
 should_filter_lists <- TRUE
 should_build_watchlist <- TRUE
 should_fill_watchlist <- TRUE
-should_build_new_watchlist <-  TRUE
-should_build_rules <- TRUE
+should_build_new_watchlist <-  FALSE
+should_build_rules <- FALSE
 should_build_clusters <- TRUE
 
 set.seed(321)
@@ -55,7 +55,7 @@ if(should_filter_lists) {
   user_anime_list_filtered <- user_anime_list_filtered[user_anime_list_filtered$my_status == 2,]
   print(length(user_anime_list_filtered$username))
   #user_anime_list_filtered <- user_anime_list_filtered[sample(nrow(user_anime_list_filtered), 10000, replace=TRUE),]
-  user_anime_list_filtered <- user_anime_list_filtered[1:100000,]
+  user_anime_list_filtered <- user_anime_list_filtered[100000:200000,]
 }
 
 if(should_build_watchlist) {
@@ -115,20 +115,28 @@ if(should_build_new_watchlist){
 
 if(should_build_clusters){
   watch_list_named <- watch_list
-  new_names <- list()
-  for (i in names(watch_list)){
-   # print(i)
-    if(i == "username") {
-      new_names <- c(new_names, "username")
-    } else {
-      new_names <- c(new_names, anime_list[anime_list$anime_id == i,]$title)
-    }
-
+  #new_names <- list()
+  #for (i in names(watch_list)){
+  # # print(i)
+  #  if(i == "username") {
+  #    new_names <- c(new_names, "username")
+  #  } else {
+  #    new_names <- c(new_names, anime_list[anime_list$anime_id == i,]$title)
+  #  }
+  #
+  #}
+  for (show in watch_list_named[,-1]) {
+    print(i)
+    print(length(watch_list_named[[i]] == TRUE))
+    print(length(watch_list_named[[i]] == FALSE))
   }
+
+
   names(watch_list_named) <- new_names
   watch_list_named <- watch_list_named[sample(nrow(watch_list_named), 100, replace=TRUE),]
-  row.names(watch_list_named) <- watch_list_named$username
-  k <- kmeans(watch_list_named[,-1], centers = 2, nstart = 25)
+ # row.names(watch_list_named) <- watch_list_named$username
+
+  k <- kmeans(watch_list_named[,-1], centers = 5, nstart = 3)
   print(k)
   fviz_cluster(k, data = watch_list_named[,-1])
 }
