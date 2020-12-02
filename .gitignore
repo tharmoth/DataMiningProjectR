@@ -1,3 +1,9 @@
-*.csv
+anime_cleaned.csv
+anime_filtered.csv
+AnimeList.csv
+users_cleaned.csv
+users_filtered.csv
+UserList.csv
 .idea
 *.Rda
+venv/

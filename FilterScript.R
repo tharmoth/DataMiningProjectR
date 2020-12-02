@@ -3,7 +3,7 @@
 # Created by: Scott Kersh
 # Created on: 11/21/2020
 
-should_load_csv <- FALSE
+should_load_csv <- TRUE
 should_save_rdat <- FALSE
 should_load_rdat <- FALSE
 should_filter_lists <- TRUE
@@ -15,7 +15,7 @@ if(should_load_csv){
   anime_list <- read.csv("AnimeList.csv")
   user_list <- read.csv("UserList.csv")
   ual_cols <- c(NA, NA, "NULL", "NULL", "NULL", "NULL", NA, "NULL", "NULL", "NULL", "NULL")
-  #time <- system.time(user_anime_list <- read.csv("animelists_filtered.csv", colClasses = ual_cols))
+  time <- system.time(user_anime_list <- read.csv("animelists_filtered.csv", colClasses = ual_cols))
   #time <- system.time(user_anime_list <- read.csv("UserAnimeList.csv", colClasses = ual_cols))
   #print(time)
 }
@@ -78,12 +78,21 @@ distance <- function (id1, id2) {
 
 # Calculates the distance between each show and stores them in a dendogram
 if(should_calc_mutual){
+  print("Calculating mutual distance")
   mat <- matrix(0, nrow = length(anime_list_filtered$anime_id), ncol = length(anime_list_filtered$anime_id))
   rownames(mat) <- replicate(length(anime_list_filtered$anime_id), 0)
   colnames(mat) <- replicate(length(anime_list_filtered$anime_id), 0)
+
+  n <- length(anime_list_filtered$anime_id)*2
+  distance_frame <- data.frame(show_1=character(n),
+                               show_2=character(n),
+                               distance=numeric(n),
+                               stringsAsFactors=FALSE)
+
+  k <- 1
   for (i in 2:length(anime_list_filtered$anime_id)-1) {
     for(j in (i+1):length(anime_list_filtered$anime_id)) {
-      dist <- distance(anime_list_filtered$anime_id[i], anime_list_filtered$anime_id[j])
+      dist <- 1 - distance(anime_list_filtered$anime_id[i], anime_list_filtered$anime_id[j])
       mat[j, i] <- dist
       mat[i, j] <- dist
 
@@ -91,14 +100,24 @@ if(should_calc_mutual){
       colnames(mat)[j] <- anime_list[anime_list$anime_id == anime_list_filtered$anime_id[j],]$title_english
       rownames(mat)[i] <- anime_list[anime_list$anime_id == anime_list_filtered$anime_id[i],]$title_english
       colnames(mat)[i] <- anime_list[anime_list$anime_id == anime_list_filtered$anime_id[i],]$title_english
+
+      distance_frame[k,] <- c(anime_list[anime_list$anime_id == anime_list_filtered$anime_id[i],]$title_english,
+                                                     anime_list[anime_list$anime_id == anime_list_filtered$anime_id[j],]$title_english,
+                                                     dist)
+      k <- k + 1
+      distance_frame[k,] <- c(anime_list[anime_list$anime_id == anime_list_filtered$anime_id[j],]$title_english,
+                                               anime_list[anime_list$anime_id == anime_list_filtered$anime_id[i],]$title_english,
+                                               dist)
+      k <- k + 1
     }
   }
-  mat <- (1 - mat)
 }
 
 # Make clusters using built in R for testing!
-print(mat)
+# print(mat)
 test <- as.dist(mat)
-print(test)
-hc1 <- hclust(test, method = "ward.D")
+hc1 <- hclust(test, method = "complete")
 plot(hc1)
+
+print("Printing!")
+write.csv(distance_frame, "anime_distance_100.csv", row.names = FALSE)
